@@ -1,0 +1,165 @@
+/*@!Encoding:1252*/
+includes
+{
+  
+}
+
+variables
+{
+  message Engine_Message em;
+  message Accel_Message acc;
+  message CruiseControl_Message cc;
+  message HMI_Message hmi;
+  message Brake_Message br;
+  int currentspeed = 0;
+  msTimer braketimer;
+}
+
+on envVar Env_Engine
+{
+  if(@Env_Engine==1)
+  {
+    em.Engine_Signal=@Env_Engine;
+    output(em);
+    write("Engine is ON");
+  }
+  else 
+  {
+    em.Engine_Signal=@Env_Engine;
+    output(em);
+    write("Engine is OFF");
+  }
+}
+
+//Acceleration
+//on envVar Env_Accel
+//{
+//  if(@Env_Engine==1)
+//  {
+//    acc.Accel_signal = @Env_Accel;
+//    output(acc);
+//  }
+//}
+
+on key 'a'
+{
+  if(@Env_Engine==1)
+  {
+    currentspeed += 10; // each time it runs, it increases the value of current speed by +10
+    acc.Accel_signal = currentspeed;
+    output(acc); //sends message on CAN BUS thereby reflects on Panel
+    write("Speed is increased by +10 kmph");
+  }
+  else
+  {
+    write("Check if Engine is ON/OFF");
+  }
+}
+
+on key 'b'
+{
+  if(@Env_Engine==1)
+  {
+    currentspeed -= 10; // each time it runs, it increases the value of current speed by +10
+    acc.Accel_signal = currentspeed;
+    output(acc); //sends message on CAN BUS thereby reflects on Panel
+    write("Speed is decreased by -10 kmph");
+  }
+  else
+  {
+    write("Check if Engine is ON/OFF");
+  }
+} 
+
+//Cruise Control Activation
+
+on envVar Env_CC
+{
+  if(@Env_CC==1)
+  {
+    if(acc.Accel_signal >= 30)
+    {
+      cc.CruiseControl_Signal = @Env_CC;
+      output(cc);
+      hmi.HMI_Signal = acc.Accel_signal;
+      output(hmi);
+      write("Cruise Control is ON");
+    }
+    else if (acc.Accel_signal <=29)
+    {
+      write("CC not available below 30Kmph");
+      @Env_CC=0;
+    }
+  }
+}
+
+
+//Cruise Control increase by 1
+on envVar Env_CCIncrease
+{
+  if(@Env_CC==1)
+  {
+    acc.Accel_signal += 1;
+    output(acc);
+    hmi.HMI_Signal = acc.Accel_signal;
+    output(hmi);
+    write("Cruise Speed is incremented by +1Kmph");
+  }
+}
+
+//Cruise Control decrease by 1
+on envVar Env_CCDecrease
+{
+  if(@Env_CC==1)
+  {
+    acc.Accel_signal -= 1;
+    output(acc);
+    hmi.HMI_Signal = acc.Accel_signal;
+    output(hmi);
+    write("Cruise Speed is decremented by -1Kmph");
+  }
+}
+
+
+//Brake status
+on envVar Env_Brake
+{
+  if(@Env_Brake==1)
+  {
+    br.Brake_Signal=@Env_Brake;
+    output(br);
+    @Env_CC = 0;
+    @Env_CCIncrease = 0;
+    @Env_CCDecrease = 0;
+    hmi.HMI_Signal=0;
+    output(hmi);
+    output(cc);
+    cancelTimer (braketimer);
+    setTimer (braketimer, 1000); // to start gradual braking
+    write("Brake is applied, CC deactivated");
+  }
+}
+
+//Timer for gradual braking
+
+on timer braketimer
+{
+  if(currentspeed>0)
+  {
+    currentspeed -=1;  //Gradually decrease speed by 1
+    acc.Accel_signal = currentspeed;
+    output(acc);
+    setTimer (braketimer, 1000); // to reduce speed every 1s
+  }
+  else
+  {
+    cancelTimer (braketimer);
+    write("Vehicle speed has reached 0");
+  }
+}
+
+on message HMI_Message
+{
+  output(hmi);
+}
+

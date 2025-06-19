@@ -1,0 +1,70 @@
+VERSION ""
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: HMI_ECU Brakes_ECU Cruise_Control Engine
+
+
+BO_ 260 HMI_Message: 1 HMI_ECU
+ SG_ HMI_Signal : 0|8@1+ (1,0) [0|1] ""  Brakes_ECU,Cruise_Control,Engine
+
+BO_ 259 Brake_Message: 1 Brakes_ECU
+ SG_ Brake_Signal : 0|8@1+ (1,0) [0|1] ""  HMI_ECU,Cruise_Control,Engine
+
+BO_ 258 CruiseControl_Message: 1 Cruise_Control
+ SG_ CruiseControl_Signal : 0|8@1+ (1,0) [0|1] ""  HMI_ECU,Brakes_ECU,Engine
+
+BO_ 257 Accel_Message: 8 Engine
+ SG_ Accel_signal : 0|8@1+ (1,0) [0|120] ""  HMI_ECU,Brakes_ECU,Cruise_Control
+
+BO_ 256 Engine_Message: 1 Engine
+ SG_ Engine_Signal : 0|8@1+ (1,0) [0|1] ""  HMI_ECU,Brakes_ECU,Cruise_Control
+
+
+
+EV_ Env_Brake: 0 [0|1] "" 0 1 DUMMY_NODE_VECTOR0 Vector__XXX;
+
+EV_ Env_CCDecrease: 0 [0|1] "" 0 2 DUMMY_NODE_VECTOR0 Vector__XXX;
+
+EV_ Env_CCIncrease: 0 [0|1] "" 0 3 DUMMY_NODE_VECTOR0 Vector__XXX;
+
+EV_ Env_CC: 0 [0|1] "" 0 4 DUMMY_NODE_VECTOR0 Vector__XXX;
+
+EV_ Env_Engine: 0 [0|1] "" 0 5 DUMMY_NODE_VECTOR0 Vector__XXX;
+
+EV_ Env_Accel: 0 [0|288] "" 0 6 DUMMY_NODE_VECTOR0 Vector__XXX;
+
+BA_DEF_  "BusType" STRING ;
+BA_DEF_DEF_  "BusType" "CAN";
+
